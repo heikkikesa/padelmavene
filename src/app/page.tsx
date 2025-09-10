@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import TournamentSetup from "./components/TournamentSetup";
 import MatchesList from "./components/MatchesList";
 import Results from "./components/Results";
 import { TournamentData, Match, Player, PlayerStats } from "./types";
+import logo from "./logo.png";
 
 export default function Home() {
   const [currentView, setCurrentView] = useState<
@@ -278,9 +280,17 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-4">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-center mb-8 text-white">
-          Padelmavene
-        </h1>
+        <div className="flex justify-center mb-8">
+          <div className="w-96 h-96 rounded-full overflow-hidden">
+            <Image
+              src={logo}
+              alt="Padelmavene Logo"
+              width={256}
+              height={256}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
 
         {currentView === "setup" && (
           <TournamentSetup onSetupComplete={handleTournamentSetup} />

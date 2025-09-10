@@ -4,21 +4,24 @@ A Next.js application for managing Padel tournaments using the Americano format,
 
 ## Features
 
-- **Player Setup**: Select number of players (4-16) and enter player names
+- **Player Setup**: Select number of players (4-17) and enter player names
 - **Tournament Configuration**: Choose maximum score per match (16 or 32 points)
 - **Americano Format**: Automatically generates matches where every player plays with every other player exactly once
-- **Score Input**: Easy score entry interface - click winning team and select their score
+- **Score Input**: Easy score entry interface - click a team and select their score
+- **New Round**: Start a new round with the same players and settings
+- **Persistent State**: Tournament state is saved in local storage, allowing you to resume later
 - **Results**: Comprehensive tournament results showing:
-  - Final rankings based on wins and point differences
+  - Final rankings based on point differences
   - Individual player statistics
   - Match history
+  - Cumulative match history
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18.18.0 or later
-- npm or yarn
+- Node.js 22 or later
+- npm
 
 ### Installation
 
@@ -76,7 +79,7 @@ This app is configured for Firebase hosting with static export.
 
 In the Americano tournament format:
 
-- Every player plays with every other player exactly once as a partner
+- Every player plays with every other player exactly once as a partner (unless uneven number of players)
 - This creates a fair tournament where everyone gets to play with and against everyone else
 - Scoring is based on individual wins and point differences
 - The app automatically generates all necessary matches
@@ -102,7 +105,3 @@ src/
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Styling
 - **Firebase** - Hosting platform
-
-## License
-
-This project is open source and available under the MIT License.
