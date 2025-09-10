@@ -1,0 +1,187 @@
+"use client";
+
+import { useState } from "react";
+import { Player, Match, TournamentData } from "../types";
+
+interface TournamentSetupProps {
+  onSetupComplete: (data: TournamentData) => void;
+}
+
+export default function TournamentSetup({
+  onSetupComplete,
+}: TournamentSetupProps) {
+  const [playerCount, setPlayerCount] = useState<number>(0);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [maxScore, setMaxScore] = useState<number>(16);
+
+  const handlePlayerCountChange = (count: number) => {
+    setPlayerCount(count);
+    const newPlayers = Array.from({ length: count }, (_, i) => ({
+      id: i + 1,
+      name: "",
+    }));
+    setPlayers(newPlayers);
+  };
+
+  const handlePlayerNameChange = (id: number, name: string) => {
+    setPlayers((prev) =>
+      prev.map((player) => (player.id === id ? { ...player, name } : player))
+    );
+  };
+
+  const generateAmericanoMatches = (players: Player[]): Match[] => {
+    const matches: Match[] = [];
+    const playerCount = players.length;
+
+    if (playerCount === 4) {
+      // Special case: 4 players = 3 matches (everyone plays with everyone)
+      const combinations = [
+        { team1: [players[0], players[1]], team2: [players[2], players[3]] },
+        { team1: [players[0], players[2]], team2: [players[1], players[3]] },
+        { team1: [players[0], players[3]], team2: [players[1], players[2]] },
+      ];
+
+      combinations.forEach((combo, index) => {
+        matches.push({
+          id: index + 1,
+          team1: combo.team1 as [Player, Player],
+          team2: combo.team2 as [Player, Player],
+        });
+      });
+    } else {
+      // For 5, 6, 7 players: generate as many matches as players
+      for (let matchId = 1; matchId <= playerCount; matchId++) {
+        // Create a shuffled copy of players for each match
+        const shuffledPlayers = [...players].sort(() => Math.random() - 0.5);
+
+        // Take first 4 players for the match, others sit out
+        const team1: [Player, Player] = [
+          shuffledPlayers[0],
+          shuffledPlayers[1],
+        ];
+        const team2: [Player, Player] = [
+          shuffledPlayers[2],
+          shuffledPlayers[3],
+        ];
+
+        matches.push({
+          id: matchId,
+          team1,
+          team2,
+        });
+      }
+    }
+
+    return matches;
+  };
+
+  const handleStartTournament = () => {
+    if (
+      players.length < 4 ||
+      players.length > 7 ||
+      players.some((p) => !p.name.trim())
+    ) {
+      alert("Please enter names for all players (4-7 players required)");
+      return;
+    }
+
+    const matches = generateAmericanoMatches(players);
+    onSetupComplete({
+      players,
+      maxScore,
+      matches,
+    });
+  };
+
+  return (
+    <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
+      <h2 className="text-2xl font-bold mb-6 text-white">Tournament Setup</h2>
+
+      {/* Player Count Selection */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-3 text-gray-200">
+          Number of Players
+        </h3>
+        <div className="grid grid-cols-4 gap-2">
+          {[4, 5, 6, 7].map((count) => (
+            <button
+              key={count}
+              onClick={() => handlePlayerCountChange(count)}
+              className={`p-3 rounded-lg border-2 transition-colors ${
+                playerCount === count
+                  ? "border-blue-400 bg-blue-900 text-blue-300"
+                  : "border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-500 hover:bg-gray-600"
+              }`}
+            >
+              {count}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Player Names */}
+      {playerCount > 0 && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3 text-gray-200">
+            Player Names
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {players.map((player) => (
+              <input
+                key={player.id}
+                type="text"
+                value={player.name}
+                onChange={(e) =>
+                  handlePlayerNameChange(player.id, e.target.value)
+                }
+                className="p-3 border border-gray-600 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
+                placeholder={`Player ${player.id}`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Max Score Selection */}
+      {playerCount > 0 && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3 text-gray-200">
+            Maximum Score per Match
+          </h3>
+          <div className="flex gap-4">
+            <button
+              onClick={() => setMaxScore(16)}
+              className={`px-6 py-3 rounded-lg border-2 transition-colors ${
+                maxScore === 16
+                  ? "border-green-400 bg-green-900 text-green-300"
+                  : "border-gray-600 bg-gray-700 text-gray-300 hover:border-green-500 hover:bg-green-600"
+              }`}
+            >
+              16 Points
+            </button>
+            <button
+              onClick={() => setMaxScore(32)}
+              className={`px-6 py-3 rounded-lg border-2 transition-colors ${
+                maxScore === 32
+                  ? "border-green-400 bg-green-900 text-green-300"
+                  : "border-gray-600 bg-gray-700 text-gray-300 hover:border-green-500 hover:bg-green-600"
+              }`}
+            >
+              32 Points
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Start Tournament Button */}
+      {playerCount > 0 && (
+        <button
+          onClick={handleStartTournament}
+          className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+        >
+          Start Tournament ({generateAmericanoMatches(players).length} matches)
+        </button>
+      )}
+    </div>
+  );
+}
