@@ -280,17 +280,19 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-4">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-center mb-8">
-          <div className="w-96 h-96 rounded-full overflow-hidden">
-            <Image
-              src={logo}
-              alt="Padelmavene Logo"
-              width={256}
-              height={256}
-              className="w-full h-full object-cover"
-            />
+        {currentView === "setup" && (
+          <div className="flex justify-center mb-8">
+            <div className="w-96 h-96 rounded-full overflow-hidden">
+              <Image
+                src={logo}
+                alt="Padelmavene Logo"
+                width={256}
+                height={256}
+                className="w-full h-full object-cover"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {currentView === "setup" && (
           <TournamentSetup onSetupComplete={handleTournamentSetup} />
