@@ -4,7 +4,7 @@ A Next.js application for managing Padel tournaments using the Americano format,
 
 ## Features
 
-- **Player Setup**: Select number of players (4-17) and enter player names
+- **Player Setup**: Select number of players (4-7) and enter player names
 - **Tournament Configuration**: Choose maximum score per match (16 or 32 points)
 - **Americano Format**: Automatically generates matches where every player plays with every other player exactly once
 - **Score Input**: Easy score entry interface - click a team and select their score
