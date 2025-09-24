@@ -1,6 +1,6 @@
 "use client";
 
-import { Player, Match, PlayerStats, TournamentData } from "../types";
+import { Match, PlayerStats, TournamentData } from "../types";
 import { useState } from "react";
 
 interface ResultsProps {
@@ -17,6 +17,9 @@ export default function Results({
   onReshuffleTournament,
 }: ResultsProps) {
   const [activeTab, setActiveTab] = useState<"current" | "overall">("current");
+  const [showConfirmReset, setShowConfirmReset] = useState(false);
+  const [showConfirmReshuffle, setShowConfirmReshuffle] = useState(false);
+
   const calculatePlayerStats = (): PlayerStats[] => {
     const stats: { [playerId: number]: PlayerStats } = {};
 
@@ -179,19 +182,45 @@ export default function Results({
     (match) => match.score
   ).length;
 
+  const handleResetTournamentClick = () => {
+    setShowConfirmReset(true);
+  };
+
+  const handleReshuffleTournamentClick = () => {
+    setShowConfirmReshuffle(true);
+  };
+
+  const confirmReset = () => {
+    setShowConfirmReset(false);
+    onResetTournament();
+  };
+
+  const cancelReset = () => {
+    setShowConfirmReset(false);
+  };
+
+  const confirmReshuffle = () => {
+    setShowConfirmReshuffle(false);
+    onReshuffleTournament();
+  };
+
+  const cancelReshuffle = () => {
+    setShowConfirmReshuffle(false);
+  };
+
   return (
     <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-white">Tournament Results</h2>
         <div className="flex gap-2">
           <button
-            onClick={onResetTournament}
+            onClick={handleResetTournamentClick}
             className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
           >
             New Tournament
           </button>
           <button
-            onClick={onReshuffleTournament}
+            onClick={handleReshuffleTournamentClick}
             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
           >
             Play Again
@@ -300,6 +329,82 @@ export default function Results({
               </p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Reset Tournament Confirmation Modal */}
+      {showConfirmReset && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-gray-800 border border-gray-600 rounded-lg p-6 max-w-sm w-full mx-4">
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold text-center text-white">
+                New Tournament
+              </h3>
+
+              <div className="text-center text-gray-300">
+                Are you sure you want to start a new tournament?
+                <br />
+                <span className="font-semibold text-red-400">
+                  All current progress will be lost.
+                </span>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelReset}
+                  className="flex-1 bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmReset}
+                  className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors font-semibold"
+                >
+                  Start New
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reshuffle Tournament Confirmation Modal */}
+      {showConfirmReshuffle && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-gray-800 border border-gray-600 rounded-lg p-6 max-w-sm w-full mx-4">
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold text-center text-white">
+                Play Again
+              </h3>
+
+              <div className="text-center text-gray-300">
+                Are you sure you want to play again with the same players?
+                <br />
+                <span className="font-semibold text-green-400">
+                  Current results will be saved
+                </span>
+                <br />
+                <span className="text-sm">
+                  but you&apos;ll start a new round.
+                </span>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelReshuffle}
+                  className="flex-1 bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmReshuffle}
+                  className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors font-semibold"
+                >
+                  Play Again
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

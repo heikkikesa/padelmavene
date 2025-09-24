@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Player, Match, TournamentData } from "../types";
+import { Player, TournamentData } from "../types";
+import { generateAmericanoMatches } from "../utils/matchGeneration";
 
 interface TournamentSetupProps {
   onSetupComplete: (data: TournamentData) => void;
@@ -27,52 +28,6 @@ export default function TournamentSetup({
     setPlayers((prev) =>
       prev.map((player) => (player.id === id ? { ...player, name } : player))
     );
-  };
-
-  const generateAmericanoMatches = (players: Player[]): Match[] => {
-    const matches: Match[] = [];
-    const playerCount = players.length;
-
-    if (playerCount === 4) {
-      // Special case: 4 players = 3 matches (everyone plays with everyone)
-      const combinations = [
-        { team1: [players[0], players[1]], team2: [players[2], players[3]] },
-        { team1: [players[0], players[2]], team2: [players[1], players[3]] },
-        { team1: [players[0], players[3]], team2: [players[1], players[2]] },
-      ];
-
-      combinations.forEach((combo, index) => {
-        matches.push({
-          id: index + 1,
-          team1: combo.team1 as [Player, Player],
-          team2: combo.team2 as [Player, Player],
-        });
-      });
-    } else {
-      // For 5, 6, 7 players: generate as many matches as players
-      for (let matchId = 1; matchId <= playerCount; matchId++) {
-        // Create a shuffled copy of players for each match
-        const shuffledPlayers = [...players].sort(() => Math.random() - 0.5);
-
-        // Take first 4 players for the match, others sit out
-        const team1: [Player, Player] = [
-          shuffledPlayers[0],
-          shuffledPlayers[1],
-        ];
-        const team2: [Player, Player] = [
-          shuffledPlayers[2],
-          shuffledPlayers[3],
-        ];
-
-        matches.push({
-          id: matchId,
-          team1,
-          team2,
-        });
-      }
-    }
-
-    return matches;
   };
 
   const handleStartTournament = () => {

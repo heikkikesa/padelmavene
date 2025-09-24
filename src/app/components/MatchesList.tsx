@@ -1,24 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Player, Match, TournamentData, PlayerStats } from "../types";
+import { Match, TournamentData, PlayerStats } from "../types";
 
 interface MatchesListProps {
   tournamentData: TournamentData;
   onFinishMatches: (results: Match[]) => void;
   onMatchesUpdate: (matches: Match[]) => void;
+  onResetTournament: () => void;
 }
 
 export default function MatchesList({
   tournamentData,
   onFinishMatches,
   onMatchesUpdate,
+  onResetTournament,
 }: MatchesListProps) {
   const [matches, setMatches] = useState<Match[]>(tournamentData.matches);
   const [selectedMatch, setSelectedMatch] = useState<number | null>(null);
   const [selectedTeam, setSelectedTeam] = useState<"team1" | "team2" | null>(
     null
   );
+  const [showConfirmReset, setShowConfirmReset] = useState(false);
 
   // Sync matches state when tournamentData changes (e.g., from localStorage restore)
   useEffect(() => {
@@ -150,6 +153,19 @@ export default function MatchesList({
     setSelectedTeam(null);
   };
 
+  const handleResetTournamentClick = () => {
+    setShowConfirmReset(true);
+  };
+
+  const confirmReset = () => {
+    setShowConfirmReset(false);
+    onResetTournament();
+  };
+
+  const cancelReset = () => {
+    setShowConfirmReset(false);
+  };
+
   const completedMatches = matches.filter((match) => match.score).length;
   const totalMatches = matches.length;
   const playerStats = calculatePlayerStats();
@@ -169,9 +185,17 @@ export default function MatchesList({
     <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
       {/* Current Standings */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-3 text-white">
-          Current Standings
-        </h3>
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-lg font-semibold text-white">
+            Current Standings
+          </h3>
+          <button
+            onClick={handleResetTournamentClick}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+          >
+            New Tournament
+          </button>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
@@ -340,6 +364,42 @@ export default function MatchesList({
                 </div>
               );
             })()}
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {showConfirmReset && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-gray-800 border border-gray-600 rounded-lg p-6 max-w-sm w-full mx-4">
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold text-center text-white">
+                New Tournament
+              </h3>
+
+              <div className="text-center text-gray-300">
+                Are you sure you want to start a new tournament?
+                <br />
+                <span className="font-semibold text-red-400">
+                  All current progress will be lost.
+                </span>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelReset}
+                  className="flex-1 bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmReset}
+                  className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors font-semibold"
+                >
+                  Start New
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
