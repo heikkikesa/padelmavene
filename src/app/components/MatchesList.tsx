@@ -204,6 +204,15 @@ export default function MatchesList({
                   Name
                 </th>
                 <th className="border border-gray-600 px-4 py-2 text-center text-gray-200">
+                  Diff
+                </th>
+                <th className="border border-gray-600 px-4 py-2 text-center text-gray-200">
+                  +
+                </th>
+                <th className="border border-gray-600 px-4 py-2 text-center text-gray-200">
+                  -
+                </th>
+                <th className="border border-gray-600 px-4 py-2 text-center text-gray-200">
                   M
                 </th>
                 <th className="border border-gray-600 px-4 py-2 text-center text-gray-200">
@@ -215,9 +224,6 @@ export default function MatchesList({
                 <th className="border border-gray-600 px-4 py-2 text-center text-gray-200">
                   L
                 </th>
-                <th className="border border-gray-600 px-4 py-2 text-center text-gray-200">
-                  Diff
-                </th>
               </tr>
             </thead>
             <tbody>
@@ -225,18 +231,6 @@ export default function MatchesList({
                 <tr key={stats.player.id} className="bg-gray-700">
                   <td className="border border-gray-600 px-4 py-2 font-semibold text-white">
                     {stats.player.name}
-                  </td>
-                  <td className="border border-gray-600 px-4 py-2 text-center text-gray-300">
-                    {stats.matchesPlayed}
-                  </td>
-                  <td className="border border-gray-600 px-4 py-2 text-center text-green-400 font-semibold">
-                    {stats.wins}
-                  </td>
-                  <td className="border border-gray-600 px-4 py-2 text-center text-yellow-400 font-semibold">
-                    {stats.ties}
-                  </td>
-                  <td className="border border-gray-600 px-4 py-2 text-center text-red-400 font-semibold">
-                    {stats.losses}
                   </td>
                   <td
                     className={`border border-gray-600 px-4 py-2 text-center font-semibold ${
@@ -249,6 +243,24 @@ export default function MatchesList({
                   >
                     {stats.pointsDifference > 0 ? "+" : ""}
                     {stats.pointsDifference}
+                  </td>
+                  <td className="border border-gray-600 px-4 py-2 text-center text-gray-300">
+                    {stats.pointsFor}
+                  </td>
+                  <td className="border border-gray-600 px-4 py-2 text-center text-gray-300">
+                    {stats.pointsAgainst}
+                  </td>
+                  <td className="border border-gray-600 px-4 py-2 text-center text-gray-300">
+                    {stats.matchesPlayed}
+                  </td>
+                  <td className="border border-gray-600 px-4 py-2 text-center text-green-400 font-semibold">
+                    {stats.wins}
+                  </td>
+                  <td className="border border-gray-600 px-4 py-2 text-center text-yellow-400 font-semibold">
+                    {stats.ties}
+                  </td>
+                  <td className="border border-gray-600 px-4 py-2 text-center text-red-400 font-semibold">
+                    {stats.losses}
                   </td>
                 </tr>
               ))}

@@ -110,6 +110,12 @@ export default function Results({
                 Difference
               </th>
               <th className="border border-gray-600 px-4 py-3 text-center text-gray-200">
+                Points For
+              </th>
+              <th className="border border-gray-600 px-4 py-3 text-center text-gray-200">
+                Points Against
+              </th>
+              <th className="border border-gray-600 px-4 py-3 text-center text-gray-200">
                 Matches
               </th>
               <th className="border border-gray-600 px-4 py-3 text-center text-gray-200">
@@ -120,12 +126,6 @@ export default function Results({
               </th>
               <th className="border border-gray-600 px-4 py-3 text-center text-gray-200">
                 Losses
-              </th>
-              <th className="border border-gray-600 px-4 py-3 text-center text-gray-200">
-                Points For
-              </th>
-              <th className="border border-gray-600 px-4 py-3 text-center text-gray-200">
-                Points Against
               </th>
             </tr>
           </thead>
@@ -152,6 +152,12 @@ export default function Results({
                   {stats.pointsDifference}
                 </td>
                 <td className="border border-gray-600 px-4 py-3 text-center text-gray-300">
+                  {stats.pointsFor}
+                </td>
+                <td className="border border-gray-600 px-4 py-3 text-center text-gray-300">
+                  {stats.pointsAgainst}
+                </td>
+                <td className="border border-gray-600 px-4 py-3 text-center text-gray-300">
                   {stats.matchesPlayed}
                 </td>
                 <td className="border border-gray-600 px-4 py-3 text-center text-green-400 font-semibold">
@@ -162,12 +168,6 @@ export default function Results({
                 </td>
                 <td className="border border-gray-600 px-4 py-3 text-center text-red-400 font-semibold">
                   {stats.losses}
-                </td>
-                <td className="border border-gray-600 px-4 py-3 text-center text-gray-300">
-                  {stats.pointsFor}
-                </td>
-                <td className="border border-gray-600 px-4 py-3 text-center text-gray-300">
-                  {stats.pointsAgainst}
                 </td>
               </tr>
             ))}
