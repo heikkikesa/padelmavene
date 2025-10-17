@@ -107,13 +107,13 @@ export default function Results({
                 Player
               </th>
               <th className="border border-gray-600 px-4 py-3 text-center text-gray-200">
-                Difference
-              </th>
-              <th className="border border-gray-600 px-4 py-3 text-center text-gray-200">
                 Points For
               </th>
               <th className="border border-gray-600 px-4 py-3 text-center text-gray-200">
                 Points Against
+              </th>
+              <th className="border border-gray-600 px-4 py-3 text-center text-gray-200">
+                Difference
               </th>
               <th className="border border-gray-600 px-4 py-3 text-center text-gray-200">
                 Matches
@@ -139,6 +139,12 @@ export default function Results({
                 <td className="border border-gray-600 px-4 py-3 font-semibold text-white">
                   {stats.player.name}
                 </td>
+                <td className="border border-gray-600 px-4 py-3 text-center text-gray-300">
+                  {stats.pointsFor}
+                </td>
+                <td className="border border-gray-600 px-4 py-3 text-center text-gray-300">
+                  {stats.pointsAgainst}
+                </td>
                 <td
                   className={`border border-gray-600 px-4 py-3 text-center font-semibold ${
                     stats.pointsDifference > 0
@@ -150,12 +156,6 @@ export default function Results({
                 >
                   {stats.pointsDifference > 0 ? "+" : ""}
                   {stats.pointsDifference}
-                </td>
-                <td className="border border-gray-600 px-4 py-3 text-center text-gray-300">
-                  {stats.pointsFor}
-                </td>
-                <td className="border border-gray-600 px-4 py-3 text-center text-gray-300">
-                  {stats.pointsAgainst}
                 </td>
                 <td className="border border-gray-600 px-4 py-3 text-center text-gray-300">
                   {stats.matchesPlayed}

@@ -22,6 +22,7 @@ export default function MatchesList({
     null
   );
   const [showConfirmReset, setShowConfirmReset] = useState(false);
+  const [showConfirmFinish, setShowConfirmFinish] = useState(false);
 
   // Sync matches state when tournamentData changes (e.g., from localStorage restore)
   useEffect(() => {
@@ -168,17 +169,47 @@ export default function MatchesList({
 
   const completedMatches = matches.filter((match) => match.score).length;
   const totalMatches = matches.length;
+  const unscoredMatches = matches.filter((match) => !match.score);
   const playerStats = calculatePlayerStats();
 
   const handleFinishTournament = () => {
-    if (completedMatches < totalMatches) {
-      const proceed = confirm(
-        `Only ${completedMatches} out of ${totalMatches} matches are completed. Finish tournament anyway?`
-      );
-      if (!proceed) return;
+    if (unscoredMatches.length > 0) {
+      setShowConfirmFinish(true);
+    } else {
+      onFinishMatches(matches);
     }
+  };
 
+  const handleFinishWithEvenScores = () => {
+    const evenScore = Math.floor(tournamentData.maxScore / 2);
+
+    const updatedMatches = matches.map((match) => {
+      if (!match.score) {
+        return {
+          ...match,
+          score: {
+            team1Score: evenScore,
+            team2Score: evenScore,
+            winner: "tie" as const,
+          },
+        };
+      }
+      return match;
+    });
+
+    setMatches(updatedMatches);
+    onMatchesUpdate(updatedMatches);
+    setShowConfirmFinish(false);
+    onFinishMatches(updatedMatches);
+  };
+
+  const handleFinishWithoutEvenScores = () => {
+    setShowConfirmFinish(false);
     onFinishMatches(matches);
+  };
+
+  const cancelFinish = () => {
+    setShowConfirmFinish(false);
   };
 
   return (
@@ -204,13 +235,13 @@ export default function MatchesList({
                   Name
                 </th>
                 <th className="border border-gray-600 px-4 py-2 text-center text-gray-200">
-                  Diff
-                </th>
-                <th className="border border-gray-600 px-4 py-2 text-center text-gray-200">
                   +
                 </th>
                 <th className="border border-gray-600 px-4 py-2 text-center text-gray-200">
                   -
+                </th>
+                <th className="border border-gray-600 px-4 py-2 text-center text-gray-200">
+                  Diff
                 </th>
                 <th className="border border-gray-600 px-4 py-2 text-center text-gray-200">
                   M
@@ -232,6 +263,12 @@ export default function MatchesList({
                   <td className="border border-gray-600 px-4 py-2 font-semibold text-white">
                     {stats.player.name}
                   </td>
+                  <td className="border border-gray-600 px-4 py-2 text-center text-gray-300">
+                    {stats.pointsFor}
+                  </td>
+                  <td className="border border-gray-600 px-4 py-2 text-center text-gray-300">
+                    {stats.pointsAgainst}
+                  </td>
                   <td
                     className={`border border-gray-600 px-4 py-2 text-center font-semibold ${
                       stats.pointsDifference > 0
@@ -243,12 +280,6 @@ export default function MatchesList({
                   >
                     {stats.pointsDifference > 0 ? "+" : ""}
                     {stats.pointsDifference}
-                  </td>
-                  <td className="border border-gray-600 px-4 py-2 text-center text-gray-300">
-                    {stats.pointsFor}
-                  </td>
-                  <td className="border border-gray-600 px-4 py-2 text-center text-gray-300">
-                    {stats.pointsAgainst}
                   </td>
                   <td className="border border-gray-600 px-4 py-2 text-center text-gray-300">
                     {stats.matchesPlayed}
@@ -380,7 +411,7 @@ export default function MatchesList({
         </div>
       )}
 
-      {/* Confirmation Modal */}
+      {/* Reset Confirmation Modal */}
       {showConfirmReset && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-gray-800 border border-gray-600 rounded-lg p-6 max-w-sm w-full mx-4">
@@ -409,6 +440,54 @@ export default function MatchesList({
                   className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors font-semibold"
                 >
                   Start New
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Finish Tournament Confirmation Modal */}
+      {showConfirmFinish && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-gray-800 border border-gray-600 rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold text-center text-white">
+                Finish Tournament
+              </h3>
+
+              <div className="text-center text-gray-300">
+                {unscoredMatches.length > 0 && (
+                  <>
+                    {unscoredMatches.length} matches don&apos;t have scores yet.
+                    <br />
+                    <span className="font-semibold text-yellow-400">
+                      Should the remaining matches get even scores?
+                    </span>
+                  </>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={handleFinishWithEvenScores}
+                  className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                >
+                  Yes, Apply Even Scores (
+                  {Math.floor(tournamentData.maxScore / 2)}-
+                  {Math.floor(tournamentData.maxScore / 2)})
+                </button>
+                <button
+                  onClick={handleFinishWithoutEvenScores}
+                  className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors font-semibold"
+                >
+                  No, Finish As-Is
+                </button>
+                <button
+                  onClick={cancelFinish}
+                  className="w-full bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
                 </button>
               </div>
             </div>
