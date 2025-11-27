@@ -12,6 +12,7 @@ Padelmavene is a Next.js 15 tournament management app for Padel (Americano forma
 - **Static export** (`output: "export"`) - all components use `"use client"` directive
 - **Three-view flow**: Setup → Matches → Results
 - **State persistence** via localStorage (keys: `padelmavene_currentView`, `padelmavene_tournamentData`, `padelmavene_overallStandings`)
+- **Multi-court support**: 8-15 players use 2-3 courts with round-based scheduling
 
 ### Core Data Flow
 
@@ -22,8 +23,8 @@ Padelmavene is a Next.js 15 tournament management app for Padel (Americano forma
 
 ### Key Components
 
-- `TournamentSetup.tsx` - Player count (4-7), names, max score (16/24/32)
-- `MatchesList.tsx` - Score input with modal UI, live standings table
+- `TournamentSetup.tsx` - Player count (4-15), names, max score (16/24/32)
+- `MatchesList.tsx` - Score input with modal UI, live standings table, round-based display for multi-court
 - `Results.tsx` - Tabbed view: current round + overall cumulative standings
 
 ## Critical Patterns
@@ -33,7 +34,14 @@ Padelmavene is a Next.js 15 tournament management app for Padel (Americano forma
 - **4 players**: Fixed 3-match schedule (everyone plays with everyone)
 - **5 players**: Deterministic 5-match schedule where each pair appears exactly once
 - **6 players**: 6-match schedule with 12 unique pairs (each player in 4 matches)
-- **7+ players**: Greedy algorithm prioritizing balanced participation
+- **7 players**: Greedy algorithm prioritizing balanced participation
+- **8+ players**: Multi-court round-based algorithm with smart pairing
+  - 8-11 players use 2 courts
+  - 12-15 players use 3 courts
+  - Extensible: `Math.ceil(playerCount / 4)` for larger tournaments
+  - Prioritizes new partnerships and oppositions
+  - Balances match participation across all players
+  - Generates rounds with simultaneous matches on different courts
 - Always randomizes team positions and left/right sides for variety
 - Uses Fisher-Yates shuffle for fair randomization
 
@@ -53,7 +61,7 @@ Padelmavene is a Next.js 15 tournament management app for Padel (Americano forma
 
 ### TypeScript Types (`src/app/types.ts`)
 
-- `Match` - Includes optional score (allows tracking incomplete tournaments)
+- `Match` - Includes optional score, court assignment, and round number for multi-court support
 - `TournamentData` - Distinguish between active matches and completed results
 - `PlayerStats` - Used for both current round and cumulative overall standings
 
@@ -84,7 +92,7 @@ Configuration in `firebase.json` uses root directory, not `out/` (Next.js handle
 
 ### Adding New Player Counts
 
-Update `matchGeneration.ts` with deterministic schedule to ensure optimal pairing coverage. Test that all unique pairs appear and players participate fairly.
+Update `matchGeneration.ts` with deterministic schedule to ensure optimal pairing coverage. Test that all unique pairs appear and players participate fairly. For counts beyond 15, the multi-court algorithm automatically scales using `Math.ceil(playerCount / 4)` to calculate courts needed.
 
 ### Modifying Score Options
 
@@ -109,3 +117,4 @@ When adding new state, remember the three-part pattern:
 - **No image optimization** - `images: { unoptimized: true }` required for static export
 - **Path aliases** - Use `@/` prefix (resolves to `src/`, configured in `tsconfig.json`)
 - **Match generation is deterministic** - Don't introduce randomness that breaks unique pair guarantees for 4-6 players
+- **Multi-court rounds** - For 8+ players, matches are grouped by rounds with simultaneous court play

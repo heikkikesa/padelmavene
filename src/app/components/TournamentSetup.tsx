@@ -33,10 +33,10 @@ export default function TournamentSetup({
   const handleStartTournament = () => {
     if (
       players.length < 4 ||
-      players.length > 7 ||
+      players.length > 15 ||
       players.some((p) => !p.name.trim())
     ) {
-      alert("Please enter names for all players (4-7 players required)");
+      alert("Please enter names for all players (4-15 players required)");
       return;
     }
 
@@ -57,8 +57,23 @@ export default function TournamentSetup({
         <h3 className="text-lg font-semibold mb-3 text-gray-200">
           Number of Players
         </h3>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-2 mb-2">
           {[4, 5, 6, 7].map((count) => (
+            <button
+              key={count}
+              onClick={() => handlePlayerCountChange(count)}
+              className={`p-3 rounded-lg border-2 transition-colors ${
+                playerCount === count
+                  ? "border-blue-400 bg-blue-900 text-blue-300"
+                  : "border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-500 hover:bg-gray-600"
+              }`}
+            >
+              {count}
+            </button>
+          ))}
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          {[8, 9, 10, 11, 12, 13, 14, 15].map((count) => (
             <button
               key={count}
               onClick={() => handlePlayerCountChange(count)}
@@ -144,7 +159,22 @@ export default function TournamentSetup({
           onClick={handleStartTournament}
           className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
         >
-          Start Tournament ({generateAmericanoMatches(players).length} matches)
+          Start Tournament (
+          {(() => {
+            const matches = generateAmericanoMatches(players);
+            const courts =
+              playerCount >= 8
+                ? playerCount <= 11
+                  ? 2
+                  : playerCount <= 15
+                  ? 3
+                  : Math.ceil(playerCount / 4)
+                : 1;
+            return courts > 1
+              ? `${matches.length} matches, ${courts} courts`
+              : `${matches.length} matches`;
+          })()}
+          )
         </button>
       )}
     </div>

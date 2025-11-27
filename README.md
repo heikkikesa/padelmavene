@@ -4,10 +4,20 @@ A Next.js application for managing Padel tournaments using the Americano format,
 
 ## Features
 
-- **Player Setup**: Select number of players (4-7) and enter player names
-- **Tournament Configuration**: Choose maximum score per match (16 or 32 points)
-- **Americano Format**: Automatically generates matches where every player plays with every other player exactly once
+- **Player Setup**: Select number of players (4-15) and enter player names
+- **Multi-Court Support**: Automatic court allocation for 8+ players
+  - 8-11 players: 2 courts
+  - 12-15 players: 3 courts
+  - Extensible for larger tournaments
+- **Tournament Configuration**: Choose maximum score per match (16, 24, or 32 points)
+- **Americano Format**: Automatically generates matches following Americano rules
+  - 4-7 players: Single court with optimized pairing schedules
+  - 8+ players: Multi-court rounds with smart rotation
+  - Players rotate partners and opponents throughout the tournament
+  - Balanced participation across all players
+- **Round-Based Play**: For multi-court tournaments, matches are organized in rounds
 - **Score Input**: Easy score entry interface - click a team and select their score
+- **Live Standings**: Real-time tournament standings with comprehensive statistics
 - **New Round**: Start a new round with the same players and settings
 - **Persistent State**: Tournament state is saved in local storage, allowing you to resume later
 - **Results**: Comprehensive tournament results showing:
@@ -79,10 +89,29 @@ This app is configured for Firebase hosting with static export.
 
 In the Americano tournament format:
 
-- Every player plays with every other player exactly once as a partner (unless uneven number of players)
-- This creates a fair tournament where everyone gets to play with and against everyone else
-- Scoring is based on individual wins and point differences
-- The app automatically generates all necessary matches
+- Players continuously rotate partners and opponents throughout the tournament
+- Each player should play with as many different partners as possible
+- Each player should face as many different opponents as possible
+- Matches ensure balanced participation across all players
+- Scoring is based on individual point differences and wins
+
+### Single Court (4-7 Players)
+
+- Each player gets a similar number of matches
+- Optimized pairing schedules ensure fair rotation
+- All matches played sequentially
+
+### Multi-Court (8+ Players)
+
+- Matches organized into rounds
+- Multiple matches happen simultaneously on different courts
+- Smart algorithm ensures:
+  - New partnerships are prioritized
+  - Players face different opponents each round
+  - Balanced match participation
+  - Efficient rotation across courts
+
+The app automatically generates all necessary matches following these principles.
 
 ## Project Structure
 
@@ -90,9 +119,11 @@ In the Americano tournament format:
 src/
 ├── app/
 │   ├── components/
-│   │   ├── TournamentSetup.tsx  # Player setup and tournament configuration
-│   │   ├── MatchesList.tsx      # Match management and score input
+│   │   ├── TournamentSetup.tsx  # Player setup (4-15 players) and tournament configuration
+│   │   ├── MatchesList.tsx      # Match management, score input, and round display
 │   │   └── Results.tsx          # Tournament results and rankings
+│   ├── utils/
+│   │   └── matchGeneration.ts   # Match generation algorithms (single & multi-court)
 │   ├── types.ts                 # TypeScript type definitions
 │   └── page.tsx                 # Main application component
 ├── globals.css                  # Global styles

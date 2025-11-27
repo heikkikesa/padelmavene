@@ -7,6 +7,8 @@ export interface Match {
   id: number;
   team1: [Player, Player];
   team2: [Player, Player];
+  court?: number; // Court assignment for multi-court tournaments
+  round?: number; // Round number for multi-court tournaments
   score?: {
     team1Score: number;
     team2Score: number;

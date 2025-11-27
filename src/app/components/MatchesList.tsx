@@ -10,6 +10,19 @@ interface MatchesListProps {
   onResetTournament: () => void;
 }
 
+// Helper function to get court badge colors
+const getCourtBadgeClasses = (court: number): string => {
+  const colors = [
+    "bg-blue-900 text-blue-300", // Court 1: Blue
+    "bg-orange-900 text-orange-300", // Court 2: Orange
+    "bg-rose-900 text-rose-300", // Court 3: Rose
+    "bg-purple-900 text-purple-300", // Court 4: Purple
+    "bg-pink-900 text-pink-300", // Court 5: Pink
+    "bg-cyan-900 text-cyan-300", // Court 6: Cyan
+  ];
+  return colors[(court - 1) % colors.length] || "bg-gray-900 text-gray-300";
+};
+
 export default function MatchesList({
   tournamentData,
   onFinishMatches,
@@ -172,6 +185,21 @@ export default function MatchesList({
   const unscoredMatches = matches.filter((match) => !match.score);
   const playerStats = calculatePlayerStats();
 
+  // Check if this is a multi-court tournament
+  const isMultiCourt = matches.some((match) => match.court !== undefined);
+
+  // Group matches by round for multi-court tournaments
+  const matchesByRound = isMultiCourt
+    ? matches.reduce((acc, match) => {
+        const round = match.round || 1;
+        if (!acc[round]) {
+          acc[round] = [];
+        }
+        acc[round].push(match);
+        return acc;
+      }, {} as Record<number, Match[]>)
+    : { 1: matches };
+
   const handleFinishTournament = () => {
     if (unscoredMatches.length > 0) {
       setShowConfirmFinish(true);
@@ -317,47 +345,194 @@ export default function MatchesList({
       </div>
 
       <div className="space-y-4 mb-6">
-        {matches.map((match) => (
-          <div
-            key={match.id}
-            className="border border-gray-600 bg-gray-700 rounded-lg p-4"
-          >
-            <div className="text-sm text-gray-400 mb-3 text-center">
-              Match {match.id}
-            </div>
+        {isMultiCourt
+          ? // Multi-court display: grouped by rounds
+            Object.keys(matchesByRound)
+              .sort((a, b) => Number(a) - Number(b))
+              .map((roundKey) => {
+                const round = Number(roundKey);
+                const roundMatches = matchesByRound[round];
 
-            <div className="flex items-center justify-center gap-4">
-              {/* Team 1 Score */}
-              <div className="text-3xl font-bold text-green-400 w-12 text-center">
-                {match.score ? match.score.team1Score : ""}
-              </div>
+                return (
+                  <div
+                    key={round}
+                    className="border border-gray-500 rounded-lg p-4 bg-gray-750"
+                  >
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="text-lg font-semibold text-white">
+                        Round {round}
+                      </h3>
+                      <span className="text-sm text-gray-400">
+                        {roundMatches.filter((m) => m.score).length} /{" "}
+                        {roundMatches.length} completed
+                      </span>
+                    </div>
 
-              {/* Team 1 Button */}
-              <button
-                onClick={() => handleTeamSelect(match.id, "team1")}
-                className="bg-gray-600 hover:bg-green-600 text-white px-3 py-2 rounded-lg transition-colors border border-gray-500 hover:border-green-400"
+                    <div className="space-y-3">
+                      {roundMatches
+                        .sort((a, b) => (a.court || 0) - (b.court || 0))
+                        .map((match) => (
+                          <div
+                            key={match.id}
+                            className={`border rounded-lg p-4 ${
+                              match.score
+                                ? "border-gray-600 bg-gray-700"
+                                : "border-yellow-600 bg-gray-700"
+                            }`}
+                          >
+                            <div className="flex items-center justify-center mb-2">
+                              <div className="text-sm text-gray-400">
+                                Match {match.id}
+                                {match.court && (
+                                  <span
+                                    className={`ml-2 px-2 py-0.5 rounded text-xs font-semibold ${getCourtBadgeClasses(
+                                      match.court
+                                    )}`}
+                                  >
+                                    Court {match.court}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-center gap-2 sm:gap-4">
+                              {/* Team 1 Score */}
+                              <div
+                                className={`text-2xl sm:text-3xl font-bold w-10 sm:w-12 text-center ${
+                                  match.score
+                                    ? match.score.winner === "team1"
+                                      ? "text-green-400"
+                                      : match.score.winner === "tie"
+                                      ? "text-orange-400"
+                                      : "text-red-400"
+                                    : "text-gray-400"
+                                }`}
+                              >
+                                {match.score ? match.score.team1Score : ""}
+                              </div>
+
+                              {/* Team 1 Button */}
+                              <button
+                                onClick={() =>
+                                  handleTeamSelect(match.id, "team1")
+                                }
+                                className="bg-gray-600 hover:bg-green-600 text-white px-2 sm:px-3 py-2 rounded-lg transition-colors border border-gray-500 hover:border-green-400 text-xs sm:text-sm w-[120px] sm:w-[140px] overflow-hidden"
+                              >
+                                <div className="truncate">
+                                  {match.team1[0].name}
+                                </div>
+                                <div className="truncate">
+                                  {match.team1[1].name}
+                                </div>
+                              </button>
+
+                              {/* VS */}
+                              <span className="text-gray-400 font-normal text-xs sm:text-base">
+                                vs
+                              </span>
+
+                              {/* Team 2 Button */}
+                              <button
+                                onClick={() =>
+                                  handleTeamSelect(match.id, "team2")
+                                }
+                                className="bg-gray-600 hover:bg-green-600 text-white px-2 sm:px-3 py-2 rounded-lg transition-colors border border-gray-500 hover:border-green-400 text-xs sm:text-sm w-[120px] sm:w-[140px] overflow-hidden"
+                              >
+                                <div className="truncate">
+                                  {match.team2[0].name}
+                                </div>
+                                <div className="truncate">
+                                  {match.team2[1].name}
+                                </div>
+                              </button>
+
+                              {/* Team 2 Score */}
+                              <div
+                                className={`text-2xl sm:text-3xl font-bold w-10 sm:w-12 text-center ${
+                                  match.score
+                                    ? match.score.winner === "team2"
+                                      ? "text-green-400"
+                                      : match.score.winner === "tie"
+                                      ? "text-orange-400"
+                                      : "text-red-400"
+                                    : "text-gray-400"
+                                }`}
+                              >
+                                {match.score ? match.score.team2Score : ""}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                );
+              })
+          : // Single court display: simple list
+            matches.map((match) => (
+              <div
+                key={match.id}
+                className="border border-gray-600 bg-gray-700 rounded-lg p-4"
               >
-                {match.team1[0].name} & {match.team1[1].name}
-              </button>
+                <div className="text-sm text-gray-400 mb-3 text-center">
+                  Match {match.id}
+                </div>
 
-              {/* VS */}
-              <span className="text-gray-400 font-normal px-2">vs</span>
+                <div className="flex items-center justify-center gap-2 sm:gap-4">
+                  {/* Team 1 Score */}
+                  <div
+                    className={`text-2xl sm:text-3xl font-bold w-10 sm:w-12 text-center ${
+                      match.score
+                        ? match.score.winner === "team1"
+                          ? "text-green-400"
+                          : match.score.winner === "tie"
+                          ? "text-orange-400"
+                          : "text-red-400"
+                        : "text-gray-400"
+                    }`}
+                  >
+                    {match.score ? match.score.team1Score : ""}
+                  </div>
 
-              {/* Team 2 Button */}
-              <button
-                onClick={() => handleTeamSelect(match.id, "team2")}
-                className="bg-gray-600 hover:bg-green-600 text-white px-3 py-2 rounded-lg transition-colors border border-gray-500 hover:border-green-400"
-              >
-                {match.team2[0].name} & {match.team2[1].name}
-              </button>
+                  {/* Team 1 Button */}
+                  <button
+                    onClick={() => handleTeamSelect(match.id, "team1")}
+                    className="bg-gray-600 hover:bg-green-600 text-white px-2 sm:px-3 py-2 rounded-lg transition-colors border border-gray-500 hover:border-green-400 text-xs sm:text-sm w-[120px] sm:w-[140px] overflow-hidden"
+                  >
+                    <div className="truncate">{match.team1[0].name}</div>
+                    <div className="truncate">{match.team1[1].name}</div>
+                  </button>
 
-              {/* Team 2 Score */}
-              <div className="text-3xl font-bold text-green-400 w-12 text-center">
-                {match.score ? match.score.team2Score : ""}
+                  {/* VS */}
+                  <span className="text-gray-400 font-normal text-xs sm:text-base">
+                    vs
+                  </span>
+
+                  {/* Team 2 Button */}
+                  <button
+                    onClick={() => handleTeamSelect(match.id, "team2")}
+                    className="bg-gray-600 hover:bg-green-600 text-white px-2 sm:px-3 py-2 rounded-lg transition-colors border border-gray-500 hover:border-green-400 text-xs sm:text-sm w-[120px] sm:w-[140px] overflow-hidden"
+                  >
+                    <div className="truncate">{match.team2[0].name}</div>
+                    <div className="truncate">{match.team2[1].name}</div>
+                  </button>
+
+                  {/* Team 2 Score */}
+                  <div
+                    className={`text-2xl sm:text-3xl font-bold w-10 sm:w-12 text-center ${
+                      match.score
+                        ? match.score.winner === "team2"
+                          ? "text-green-400"
+                          : match.score.winner === "tie"
+                          ? "text-orange-400"
+                          : "text-red-400"
+                        : "text-gray-400"
+                    }`}
+                  >
+                    {match.score ? match.score.team2Score : ""}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
+            ))}
       </div>
 
       {/* Score Input Modal */}
