@@ -115,6 +115,16 @@ export default function TournamentSetup({
               16 Points
             </button>
             <button
+              onClick={() => setMaxScore(24)}
+              className={`px-6 py-3 rounded-lg border-2 transition-colors ${
+                maxScore === 24
+                  ? "border-green-400 bg-green-900 text-green-300"
+                  : "border-gray-600 bg-gray-700 text-gray-300 hover:border-green-500 hover:bg-green-600"
+              }`}
+            >
+              24 Points
+            </button>
+            <button
               onClick={() => setMaxScore(32)}
               className={`px-6 py-3 rounded-lg border-2 transition-colors ${
                 maxScore === 32
