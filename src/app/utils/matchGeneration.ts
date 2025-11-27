@@ -171,7 +171,8 @@ const generateMultiCourtMatches = (players: Player[]): Match[] => {
       let attempts = 0;
 
       // For 8 players on 2 courts, use look-ahead on first match to ensure second match is possible
-      const needsLookAhead = playerCount === 8 && numCourts === 2 && court === 1;
+      const needsLookAhead =
+        playerCount === 8 && numCourts === 2 && court === 1;
 
       while (!matchFound && attempts < 300) {
         attempts++;

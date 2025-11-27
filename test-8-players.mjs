@@ -35,19 +35,17 @@ Object.entries(results)
   .sort(([a], [b]) => Number(a) - Number(b))
   .forEach(([matchCount, occurrences]) => {
     const percentage = ((occurrences / 100) * 100).toFixed(1);
-    console.log(
-      `${matchCount} matches: ${occurrences} times (${percentage}%)`
-    );
+    console.log(`${matchCount} matches: ${occurrences} times (${percentage}%)`);
   });
 
 console.log(`\nAverage: ${(totalMatches / 100).toFixed(2)} matches`);
-console.log(
-  `Expected: 14 matches every time\n`
-);
+console.log(`Expected: 14 matches every time\n`);
 
 // Check for the bug
 if (results["13"]) {
-  console.log("⚠️  WARNING: Bug detected! Generated 13 matches in some iterations.");
+  console.log(
+    "⚠️  WARNING: Bug detected! Generated 13 matches in some iterations."
+  );
   process.exit(1);
 } else if (Object.keys(results).length === 1 && results["14"] === 100) {
   console.log("✅ SUCCESS: All 100 iterations generated exactly 14 matches!");

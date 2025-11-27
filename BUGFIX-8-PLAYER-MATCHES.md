@@ -1,6 +1,7 @@
 # Bug Fix: 8-Player Match Generation
 
 ## Problem
+
 Sometimes when generating matches for 8 players, the algorithm generated 13 matches instead of the expected 14 matches. This happened because:
 
 1. For 8 players with 2 courts, the target is 14 matches (7 rounds × 2 matches per round)
@@ -10,9 +11,11 @@ Sometimes when generating matches for 8 players, the algorithm generated 13 matc
 5. The algorithm would then break out of the round early with only 1 match, resulting in 13 total matches
 
 ## Root Cause
+
 The algorithm selected 4 players for the first match of a round without verifying that the remaining 4 players could form a valid second match with unique partnerships. Due to the strict partnership uniqueness constraint (critical for Americano format), certain combinations would leave the remaining 4 players unable to pair up without repeating partnerships.
 
 ## Solution
+
 Implemented a look-ahead strategy specifically for 8-player tournaments:
 
 1. **Look-ahead validation**: When selecting players for the first match of a round in 8-player tournaments, verify that the remaining 4 players can form at least one valid team combination with unique partnerships.
@@ -24,6 +27,7 @@ Implemented a look-ahead strategy specifically for 8-player tournaments:
 ## Changes Made to `matchGeneration.ts`
 
 ### 1. Look-ahead Check (lines ~168-189)
+
 ```typescript
 // Look-ahead check for 8 players: verify remaining 4 can form a valid match
 if (needsLookAhead && candidatePlayers.length === 8) {
@@ -51,12 +55,15 @@ if (needsLookAhead && candidatePlayers.length === 8) {
 ```
 
 ### 2. Increased Attempt Limit
+
 Changed from `attempts < 200` to `attempts < 300`
 
 ### 3. Extended Max Round Attempts
+
 Changed from `targetRounds + 5` to `targetRounds + 10` to allow more flexibility
 
 ### 4. Improved Retry Logic
+
 ```typescript
 } else if (matches.length >= targetTotalMatches - 2) {
   // If we're very close to target (within 2 matches), try one more time
@@ -65,6 +72,7 @@ Changed from `targetRounds + 5` to `targetRounds + 10` to allow more flexibility
 ```
 
 ## Testing
+
 To verify the fix:
 
 1. Start the dev server: `npm run dev`
@@ -74,6 +82,7 @@ To verify the fix:
 5. Check that all partnerships remain unique (no duplicate partnerships)
 
 ## Impact
+
 - **Scope**: Only affects 8-player tournaments (look-ahead logic is specific to playerCount === 8 && numCourts === 2)
 - **Performance**: Minimal impact; look-ahead check adds negligible overhead for 8-player tournaments
 - **Backward Compatibility**: No impact on other player counts (4-7, 9-15+)
