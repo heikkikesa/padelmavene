@@ -141,7 +141,7 @@ const generateMultiCourtMatches = (players: Player[]): Match[] => {
 
   let roundNumber = 1;
   let matchId = 1;
-  const maxRoundAttempts = targetRounds + 5; // Allow a few extra rounds if needed
+  const maxRoundAttempts = targetRounds + 10; // Allow extra rounds if needed
 
   for (
     let round = 0;
@@ -170,7 +170,10 @@ const generateMultiCourtMatches = (players: Player[]): Match[] => {
       let matchFound = false;
       let attempts = 0;
 
-      while (!matchFound && attempts < 200) {
+      // For 8 players on 2 courts, use look-ahead on first match to ensure second match is possible
+      const needsLookAhead = playerCount === 8 && numCourts === 2 && court === 1;
+
+      while (!matchFound && attempts < 300) {
         attempts++;
 
         // Select 4 players who haven't played this round yet
@@ -232,6 +235,30 @@ const generateMultiCourtMatches = (players: Player[]): Match[] => {
           }
           // After 80 attempts, accept any combination with unique partnerships
 
+          // Look-ahead check for 8 players: verify remaining 4 can form a valid match
+          if (needsLookAhead && candidatePlayers.length === 8) {
+            const remaining = candidatePlayers.filter(
+              (p) => !fourPlayers.find((fp) => fp.id === p.id)
+            );
+
+            if (remaining.length === 4) {
+              // Check if remaining 4 can form any valid combination
+              const remainingCombos = getTeamCombinations(remaining);
+              const hasValidRemaining = remainingCombos.some((rc) => {
+                const [r1, r2] = rc.team1;
+                const [r3, r4] = rc.team2;
+                const rt1Partnered = havePartnered(r1, r2);
+                const rt2Partnered = havePartnered(r3, r4);
+                return !rt1Partnered && !rt2Partnered;
+              });
+
+              if (!hasValidRemaining) {
+                // This combo would strand the remaining 4 players, try another
+                continue;
+              }
+            }
+          }
+
           // Create the match
           const randomizedTeam1 = randomizeTeam(combo.team1);
           const randomizedTeam2 = randomizeTeam(combo.team2);
@@ -275,6 +302,9 @@ const generateMultiCourtMatches = (players: Player[]): Match[] => {
     if (roundMatches.length > 0) {
       matches.push(...roundMatches);
       roundNumber++;
+    } else if (matches.length >= targetTotalMatches - 2) {
+      // If we're very close to target (within 2 matches), try one more time
+      continue;
     } else {
       // No more valid matches can be generated
       break;
