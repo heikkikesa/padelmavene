@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Padelmavene is a Next.js 15 tournament management app for Padel (Americano format) with static export for Firebase Hosting. The app manages player pairings, match generation, score tracking, and cumulative statistics across multiple rounds.
+Padelmavene is a Next.js 15 tournament management app for small Padel Americano tournaments (4–8 players) with static export for Firebase Hosting. The app uses a static pre-defined schedule (no pairing algorithms) to manage player match lists, score tracking, and cumulative statistics.
 
 ## Architecture
 
@@ -12,38 +12,34 @@ Padelmavene is a Next.js 15 tournament management app for Padel (Americano forma
 - **Static export** (`output: "export"`) - all components use `"use client"` directive
 - **Three-view flow**: Setup → Matches → Results
 - **State persistence** via localStorage (keys: `padelmavene_currentView`, `padelmavene_tournamentData`, `padelmavene_overallStandings`)
-- **Multi-court support**: 8-15 players use 2-3 courts with round-based scheduling
+- **Multi-court support**: Only for 8 players (2 courts). Player counts >8 are no longer supported.
 
 ### Core Data Flow
 
 1. `page.tsx` orchestrates view transitions and maintains overall tournament state
 2. State flows down through props; updates bubble up via callbacks
 3. Round-based cumulative statistics: `overallStandings` accumulates across multiple rounds
-4. Match generation algorithm ensures unique player pairings (see `matchGeneration.ts`)
+4. Static match schedule lookup (see `matchGeneration.ts` + `pairing-list.json`)
 
 ### Key Components
 
-- `TournamentSetup.tsx` - Player count (4-15), names, max score (16/24/32)
+- `TournamentSetup.tsx` - Player count (4–8), names, max score (16/24/32)
 - `MatchesList.tsx` - Score input with modal UI, live standings table, round-based display for multi-court
 - `Results.tsx` - Tabbed view: current round + overall cumulative standings
 
 ## Critical Patterns
 
-### Match Generation Algorithm (`src/app/utils/matchGeneration.ts`)
+### Static Match Schedules (`src/app/utils/matchGeneration.ts` + `pairing-list.json`)
 
-- **4 players**: Fixed 3-match schedule (everyone plays with everyone)
-- **5 players**: Deterministic 5-match schedule where each pair appears exactly once
-- **6 players**: 6-match schedule with 12 unique pairs (each player in 4 matches)
-- **7 players**: Greedy algorithm prioritizing balanced participation
-- **8+ players**: Multi-court round-based algorithm with smart pairing
-  - 8-11 players use 2 courts
-  - 12-15 players use 3 courts
-  - Extensible: `Math.ceil(playerCount / 4)` for larger tournaments
-  - Prioritizes new partnerships and oppositions
-  - Balances match participation across all players
-  - Generates rounds with simultaneous matches on different courts
-- Always randomizes team positions and left/right sides for variety
-- Uses Fisher-Yates shuffle for fair randomization
+All match generation is a direct lookup from a JSON template. No pairing algorithms are performed. For variety, the mapping of players to template indices is shuffled per generation; the round order and court assignments remain fixed.
+
+- **4 players**: 3 matches – complete partner rotation.
+- **5 players**: 5 matches – every pair exactly once; one bye per round.
+- **6 players**: 5 matches – legacy inefficient schedule (player 1 plays all); retained for completeness.
+- **7 players**: 7 matches – legacy inefficient schedule (each player plays 4).
+- **8 players**: 14 matches – 7 rounds × 2 courts; full unique partnerships.
+
+Player counts above 8 were removed; update JSON + logic if future expansion is desired.
 
 ### State Management Conventions
 
@@ -116,5 +112,5 @@ When adding new state, remember the three-part pattern:
 - **Client-side only** - All components must use `"use client"` directive
 - **No image optimization** - `images: { unoptimized: true }` required for static export
 - **Path aliases** - Use `@/` prefix (resolves to `src/`, configured in `tsconfig.json`)
-- **Match generation is deterministic** - Don't introduce randomness that breaks unique pair guarantees for 4-6 players
-- **Multi-court rounds** - For 8+ players, matches are grouped by rounds with simultaneous court play
+- **Match generation is static** - Do not add runtime pairing logic or randomness
+- **Multi-court rounds** - Only for 8 players (2 courts)

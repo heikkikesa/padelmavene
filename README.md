@@ -1,20 +1,18 @@
 # Padelmavene
 
-A Next.js application for managing Padel tournaments using the Americano format, built with TypeScript and Tailwind CSS.
+A Next.js application for managing small Padel Americano tournaments (4–8 players) using a static pre-defined schedule, built with TypeScript and Tailwind CSS.
 
 ## Features
 
-- **Player Setup**: Select number of players (4-15) and enter player names
-- **Multi-Court Support**: Automatic court allocation for 8+ players
-  - 8-11 players: 2 courts
-  - 12-15 players: 3 courts
-  - Extensible for larger tournaments
+- **Player Setup**: Select number of players (4–8) and enter player names
+- **Multi-Court Support**: Static schedule uses 2 courts only for 8 players
 - **Tournament Configuration**: Choose maximum score per match (16, 24, or 32 points)
-- **Americano Format**: Automatically generates matches following Americano rules
-  - 4-7 players: Single court with optimized pairing schedules
-  - 8+ players: Multi-court rounds with smart rotation
-  - Players rotate partners and opponents throughout the tournament
-  - Balanced participation across all players
+- **Americano Format**: Matches come from a static schedule (no algorithms)
+  - 4 players: 3 matches (everyone partners everyone once)
+  - 5 players: 5 matches (each pair appears exactly once, one bye per round)
+  - 6 players: 5 matches (inefficient legacy schedule – player 1 appears each match)
+  - 7 players: 7 matches (inefficient legacy schedule – each player 4 matches)
+  - 8 players: 14 matches (7 rounds × 2 courts, complete partner rotation)
 - **Round-Based Play**: For multi-court tournaments, matches are organized in rounds
 - **Score Input**: Easy score entry interface - click a team and select their score
 - **Live Standings**: Real-time tournament standings with comprehensive statistics
@@ -85,33 +83,17 @@ This app is configured for Firebase hosting with static export.
    firebase deploy
    ```
 
-## How the Americano Format Works
+## Match Generation Approach
 
-In the Americano tournament format:
+Previous versions used dynamic algorithms to construct schedules and balance partnerships/oppositions for larger player counts (up to 15). That logic has been removed. The application now uses a static lookup file (`src/app/utils/pairing-list.json`) containing deterministic round-by-round match templates for 4–8 players only.
 
-- Players continuously rotate partners and opponents throughout the tournament
-- Each player should play with as many different partners as possible
-- Each player should face as many different opponents as possible
-- Matches ensure balanced participation across all players
-- Scoring is based on individual point differences and wins
+Key points:
 
-### Single Court (4-7 Players)
-
-- Each player gets a similar number of matches
-- Optimized pairing schedules ensure fair rotation
-- All matches played sequentially
-
-### Multi-Court (8+ Players)
-
-- Matches organized into rounds
-- Multiple matches happen simultaneously on different courts
-- Smart algorithm ensures:
-  - New partnerships are prioritized
-  - Players face different opponents each round
-  - Balanced match participation
-  - Efficient rotation across courts
-
-The app automatically generates all necessary matches following these principles.
+- No runtime pairing algorithms. Matches are read from a static template.
+- Player-to-index assignment is shuffled per generation. This keeps the round/court order identical but varies who occupies each template slot, making "play again" feel fresh while scores remain tied to the correct Player objects.
+- Courts are only relevant for the 8-player schedule (two simultaneous matches per round).
+- 5 & 6 player schedules include byes; the UI ignores bye metadata (only matches are shown).
+- 6 & 7 player schedules are marked "inefficient" in the template – they remain for completeness but do not guarantee balanced appearances.
 
 ## Project Structure
 
@@ -123,7 +105,7 @@ src/
 │   │   ├── MatchesList.tsx      # Match management, score input, and round display
 │   │   └── Results.tsx          # Tournament results and rankings
 │   ├── utils/
-│   │   └── matchGeneration.ts   # Match generation algorithms (single & multi-court)
+│   │   └── matchGeneration.ts   # Static schedule lookup (no algorithms)
 │   ├── types.ts                 # TypeScript type definitions
 │   └── page.tsx                 # Main application component
 ├── globals.css                  # Global styles
@@ -132,7 +114,19 @@ src/
 
 ## Technologies Used
 
-- **Next.js 15** - React framework with App Router
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Styling
-- **Firebase** - Hosting platform
+- **Next.js 15** – App Router, static export
+- **TypeScript** – Type safety
+- **Tailwind CSS** – Styling
+- **Firebase** – Hosting platform
+
+## Static Schedules Summary
+
+| Players | Matches | Courts | Notes                               |
+| ------- | ------- | ------ | ----------------------------------- |
+| 4       | 3       | 1      | Full partner rotation               |
+| 5       | 5       | 1      | Every pair once, one bye each round |
+| 6       | 5       | 1      | Inefficient (player 1 every match)  |
+| 7       | 7       | 1      | Inefficient, each player 4 matches  |
+| 8       | 14      | 2      | Complete unique partnerships        |
+
+> For future changes, update `pairing-list.json` and the UI will automatically reflect the new schedule for that player count.
