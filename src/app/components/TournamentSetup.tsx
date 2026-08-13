@@ -103,37 +103,20 @@ export default function TournamentSetup({
           <h3 className="text-lg font-semibold mb-3 text-gray-200">
             Maximum Score per Match
           </h3>
-          <div className="flex gap-4">
-            <button
-              onClick={() => setMaxScore(16)}
-              className={`px-6 py-3 rounded-lg border-2 transition-colors ${
-                maxScore === 16
-                  ? "border-green-400 bg-green-900 text-green-300"
-                  : "border-gray-600 bg-gray-700 text-gray-300 hover:border-green-500 hover:bg-green-600"
-              }`}
-            >
-              16 Points
-            </button>
-            <button
-              onClick={() => setMaxScore(24)}
-              className={`px-6 py-3 rounded-lg border-2 transition-colors ${
-                maxScore === 24
-                  ? "border-green-400 bg-green-900 text-green-300"
-                  : "border-gray-600 bg-gray-700 text-gray-300 hover:border-green-500 hover:bg-green-600"
-              }`}
-            >
-              24 Points
-            </button>
-            <button
-              onClick={() => setMaxScore(32)}
-              className={`px-6 py-3 rounded-lg border-2 transition-colors ${
-                maxScore === 32
-                  ? "border-green-400 bg-green-900 text-green-300"
-                  : "border-gray-600 bg-gray-700 text-gray-300 hover:border-green-500 hover:bg-green-600"
-              }`}
-            >
-              32 Points
-            </button>
+          <div className="flex flex-wrap gap-4">
+            {[8, 16, 24, 32].map((score) => (
+              <button
+                key={score}
+                onClick={() => setMaxScore(score)}
+                className={`px-6 py-3 rounded-lg border-2 transition-colors ${
+                  maxScore === score
+                    ? "border-green-400 bg-green-900 text-green-300"
+                    : "border-gray-600 bg-gray-700 text-gray-300 hover:border-green-500 hover:bg-green-600"
+                }`}
+              >
+                {score} Points
+              </button>
+            ))}
           </div>
         </div>
       )}
