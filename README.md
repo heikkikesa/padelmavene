@@ -83,6 +83,18 @@ This app is configured for Firebase hosting with static export.
    firebase deploy
    ```
 
+### Continuous deployment
+
+Pushes to `main` (and manual workflow runs) deploy to the live Firebase Hosting channel via GitHub Actions.
+
+Add a repository secret named `FIREBASE_SERVICE_ACCOUNT_PADELMAVENE` whose value is the JSON key of a Google Cloud service account that can deploy Hosting. Grant at least:
+
+- Firebase Hosting Admin (`roles/firebasehosting.admin`)
+- Cloud Run Viewer (`roles/run.viewer`)
+- API Keys Viewer (`roles/serviceusage.apiKeysViewer`)
+
+Create the key in [GCP IAM](https://console.cloud.google.com/iam-admin/serviceaccounts?project=padelmavene), then add it at [GitHub Actions secrets](https://github.com/heikkikesa/padelmavene/settings/secrets/actions).
+
 ## Match Generation Approach
 
 Previous versions used dynamic algorithms to construct schedules and balance partnerships/oppositions for larger player counts (up to 15). That logic has been removed. The application now uses a static lookup file (`src/app/utils/pairing-list.json`) containing deterministic round-by-round match templates for 4–8 players only.
