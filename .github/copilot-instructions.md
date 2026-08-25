@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Padelmavene is a Next.js 15 tournament management app for small Padel Americano tournaments (4–8 players) with static export for Firebase Hosting. The app uses a static pre-defined schedule (no pairing algorithms) to manage player match lists, score tracking, and cumulative statistics.
+Padelmavene is a Next.js 16 tournament management app for small Padel Americano tournaments (4–8 players) with static export for Firebase Hosting. The app uses a static pre-defined schedule (no pairing algorithms) to manage player match lists, score tracking, and cumulative statistics.
 
 ## Architecture
 
@@ -43,8 +43,8 @@ Player counts above 8 were removed; update JSON + logic if future expansion is d
 
 ### State Management Conventions
 
-- All state updates must sync to localStorage via `useEffect` hooks
-- Match updates use immutable patterns: `setMatches(matches.map(...))`
+- All state updates must sync to localStorage via `useLocalStorageState`
+- Match updates use immutable patterns: `onMatchesUpdate(matches.map(...))`
 - Statistics calculation is pure: derives from match results, never mutates
 - Confirmation modals for destructive actions (reset tournament, finish early)
 
@@ -65,7 +65,7 @@ Player counts above 8 were removed; update JSON + logic if future expansion is d
 
 ### Commands
 
-- `npm run dev` - Development with Turbopack
+- `npm run dev` - Development (Turbopack is the default)
 - `npm run build` - Production build (generates static export in `out/`)
 - `npm run lint` - ESLint
 
@@ -100,11 +100,7 @@ Statistics calculation is centralized in `calculatePlayerStats()` (used in both 
 
 ### State Persistence
 
-When adding new state, remember the three-part pattern:
-
-1. Load from localStorage in initial `useEffect`
-2. Save to localStorage in reactive `useEffect`
-3. Clear on reset/new tournament
+When adding new persisted state, use `useLocalStorageState` in `src/app/utils/useLocalStorageState.ts` so the value hydrates without a `useEffect`. Clear it by setting the fallback value on reset.
 
 ## Important Constraints
 

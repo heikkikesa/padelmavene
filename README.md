@@ -28,7 +28,7 @@ A Next.js application for managing small Padel Americano tournaments (4–8 play
 
 ### Prerequisites
 
-- Node.js 22 or later
+- Node.js 24 or later
 - npm
 
 ### Installation
@@ -126,7 +126,7 @@ src/
 
 ## Technologies Used
 
-- **Next.js 15** – App Router, static export
+- **Next.js 16** – App Router, static export
 - **TypeScript** – Type safety
 - **Tailwind CSS** – Styling
 - **Firebase** – Hosting platform

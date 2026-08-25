@@ -1,82 +1,42 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import TournamentSetup from "./components/TournamentSetup";
 import MatchesList from "./components/MatchesList";
 import Results from "./components/Results";
 import { TournamentData, Match, Player, PlayerStats } from "./types";
 import { generateAmericanoMatches } from "./utils/matchGeneration";
+import { useLocalStorageState } from "./utils/useLocalStorageState";
 import logo from "./logo.png";
 
+type View = "setup" | "matches" | "results";
+
+const VIEWS: readonly View[] = ["setup", "matches", "results"];
+const EMPTY_STANDINGS: PlayerStats[] = [];
+
+function parseView(raw: string): View {
+  return VIEWS.includes(raw as View) ? (raw as View) : "setup";
+}
+
+function serializeView(value: View): string {
+  return value;
+}
+
 export default function Home() {
-  const [currentView, setCurrentView] = useState<
-    "setup" | "matches" | "results"
-  >("setup");
-  const [tournamentData, setTournamentData] = useState<TournamentData | null>(
-    null
+  const [currentView, setCurrentView] = useLocalStorageState<View>(
+    "padelmavene_currentView",
+    "setup",
+    parseView,
+    serializeView
   );
-  const [overallStandings, setOverallStandings] = useState<PlayerStats[]>([]);
-
-  // Load saved state from localStorage on component mount
-  useEffect(() => {
-    const savedCurrentView = localStorage.getItem("padelmavene_currentView");
-    const savedTournamentData = localStorage.getItem(
-      "padelmavene_tournamentData"
+  const [tournamentData, setTournamentData] =
+    useLocalStorageState<TournamentData | null>(
+      "padelmavene_tournamentData",
+      null
     );
-    const savedOverallStandings = localStorage.getItem(
-      "padelmavene_overallStandings"
-    );
-
-    if (savedCurrentView) {
-      setCurrentView(savedCurrentView as "setup" | "matches" | "results");
-    }
-
-    if (savedTournamentData) {
-      try {
-        const parsedData = JSON.parse(savedTournamentData);
-        setTournamentData(parsedData);
-      } catch (error) {
-        console.error("Failed to parse saved tournament data:", error);
-        // Clear corrupted data
-        localStorage.removeItem("padelmavene_tournamentData");
-        localStorage.removeItem("padelmavene_currentView");
-      }
-    }
-
-    if (savedOverallStandings) {
-      try {
-        const parsedStandings = JSON.parse(savedOverallStandings);
-        setOverallStandings(parsedStandings);
-      } catch (error) {
-        console.error("Failed to parse saved overall standings:", error);
-        localStorage.removeItem("padelmavene_overallStandings");
-      }
-    }
-  }, []);
-
-  // Save state to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem("padelmavene_currentView", currentView);
-  }, [currentView]);
-
-  useEffect(() => {
-    if (tournamentData) {
-      localStorage.setItem(
-        "padelmavene_tournamentData",
-        JSON.stringify(tournamentData)
-      );
-    } else {
-      localStorage.removeItem("padelmavene_tournamentData");
-    }
-  }, [tournamentData]);
-
-  useEffect(() => {
-    localStorage.setItem(
-      "padelmavene_overallStandings",
-      JSON.stringify(overallStandings)
-    );
-  }, [overallStandings]);
+  const [overallStandings, setOverallStandings] = useLocalStorageState<
+    PlayerStats[]
+  >("padelmavene_overallStandings", EMPTY_STANDINGS);
 
   const handleTournamentSetup = (data: TournamentData) => {
     setTournamentData(data);
@@ -207,12 +167,8 @@ export default function Home() {
 
   const resetTournament = () => {
     setTournamentData(null);
-    setOverallStandings([]);
+    setOverallStandings(EMPTY_STANDINGS);
     setCurrentView("setup");
-    // Clear saved data from localStorage
-    localStorage.removeItem("padelmavene_tournamentData");
-    localStorage.removeItem("padelmavene_currentView");
-    localStorage.removeItem("padelmavene_overallStandings");
   };
 
   const handleReshuffleTournament = () => {

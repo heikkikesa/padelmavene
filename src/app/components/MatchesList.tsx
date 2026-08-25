@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Match, TournamentData, PlayerStats } from "../types";
 
 interface MatchesListProps {
@@ -29,18 +29,13 @@ export default function MatchesList({
   onMatchesUpdate,
   onResetTournament,
 }: MatchesListProps) {
-  const [matches, setMatches] = useState<Match[]>(tournamentData.matches);
+  const matches = tournamentData.matches;
   const [selectedMatch, setSelectedMatch] = useState<number | null>(null);
   const [selectedTeam, setSelectedTeam] = useState<"team1" | "team2" | null>(
     null
   );
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
-
-  // Sync matches state when tournamentData changes (e.g., from localStorage restore)
-  useEffect(() => {
-    setMatches(tournamentData.matches);
-  }, [tournamentData.matches]);
 
   const calculatePlayerStats = (): PlayerStats[] => {
     const stats: { [playerId: number]: PlayerStats } = {};
@@ -144,7 +139,6 @@ export default function MatchesList({
         : match
     );
 
-    setMatches(updatedMatches);
     onMatchesUpdate(updatedMatches);
 
     setSelectedMatch(null);
@@ -225,7 +219,6 @@ export default function MatchesList({
       return match;
     });
 
-    setMatches(updatedMatches);
     onMatchesUpdate(updatedMatches);
     setShowConfirmFinish(false);
     onFinishMatches(updatedMatches);
