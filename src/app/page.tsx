@@ -171,20 +171,17 @@ export default function Home() {
     setCurrentView("setup");
   };
 
-  const handleReshuffleTournament = () => {
+  const handleReshuffleTournament = (maxScore: number) => {
     if (!tournamentData) return;
 
-    // Generate new matches with the same players and settings
     const newMatches = generateAmericanoMatches(tournamentData.players);
 
-    // Reset tournament data with new matches (no scores)
     setTournamentData({
       players: tournamentData.players,
-      maxScore: tournamentData.maxScore,
+      maxScore,
       matches: newMatches,
     });
 
-    // Go back to matches view
     setCurrentView("matches");
   };
 

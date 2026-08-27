@@ -7,7 +7,7 @@ interface ResultsProps {
   tournamentData: TournamentData & { results: Match[] };
   overallStandings: PlayerStats[];
   onResetTournament: () => void;
-  onReshuffleTournament: () => void;
+  onReshuffleTournament: (maxScore: number) => void;
 }
 
 export default function Results({
@@ -19,6 +19,7 @@ export default function Results({
   const [activeTab, setActiveTab] = useState<"current" | "overall">("current");
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const [showConfirmReshuffle, setShowConfirmReshuffle] = useState(false);
+  const [nextMaxScore, setNextMaxScore] = useState(tournamentData.maxScore);
 
   const calculatePlayerStats = (): PlayerStats[] => {
     const stats: { [playerId: number]: PlayerStats } = {};
@@ -187,6 +188,7 @@ export default function Results({
   };
 
   const handleReshuffleTournamentClick = () => {
+    setNextMaxScore(tournamentData.maxScore);
     setShowConfirmReshuffle(true);
   };
 
@@ -201,7 +203,7 @@ export default function Results({
 
   const confirmReshuffle = () => {
     setShowConfirmReshuffle(false);
-    onReshuffleTournament();
+    onReshuffleTournament(nextMaxScore);
   };
 
   const cancelReshuffle = () => {
@@ -371,7 +373,7 @@ export default function Results({
       {/* Reshuffle Tournament Confirmation Modal */}
       {showConfirmReshuffle && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-gray-800 border border-gray-600 rounded-lg p-6 max-w-sm w-full mx-4">
+          <div className="bg-gray-800 border border-gray-600 rounded-lg p-6 max-w-md w-full mx-4">
             <div className="space-y-4">
               <h3 className="text-xl font-bold text-center text-white">
                 Play Again
@@ -387,6 +389,31 @@ export default function Results({
                 <span className="text-sm">
                   but you&apos;ll start a new round.
                 </span>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold mb-3 text-gray-200">
+                  Score per match
+                </h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {[8, 16, 24, 32].map((score) => (
+                    <button
+                      key={score}
+                      type="button"
+                      onClick={() => setNextMaxScore(score)}
+                      className={`px-4 py-3 rounded-lg border-2 transition-colors ${
+                        nextMaxScore === score
+                          ? "border-green-400 bg-green-900 text-green-300"
+                          : "border-gray-600 bg-gray-700 text-gray-300 hover:border-green-500 hover:bg-green-600"
+                      }`}
+                    >
+                      {score} Points
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-2 text-sm text-gray-400">
+                  Last round: {tournamentData.maxScore} points
+                </p>
               </div>
 
               <div className="flex gap-3">
