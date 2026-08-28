@@ -65,7 +65,7 @@ describe("generateAmericanoMatches", () => {
         for (const slot of round.matches) {
           const match = matches[i++];
           expect(match.round).toBe(round.round_id);
-          expect(match.court).toBe(slot.court);
+          expect(match.court).toBe("court" in slot ? slot.court : undefined);
           expect(match.team1.map((p) => p.id)).toEqual(
             slot.team1.map((idx) => players[idx].id)
           );
