@@ -6,12 +6,12 @@ A Next.js application for managing small Padel Americano tournaments (4–8 play
 
 - **Player Setup**: Select number of players (4–8) and enter player names
 - **Multi-Court Support**: Static schedule uses 2 courts only for 8 players
-- **Tournament Configuration**: Choose maximum score per match (16, 24, or 32 points)
+- **Tournament Configuration**: Choose maximum score per match (8, 16, 24, or 32 points)
 - **Americano Format**: Matches come from a static schedule (no algorithms)
   - 4 players: 3 matches (everyone partners everyone once)
   - 5 players: 5 matches (each pair appears exactly once, one bye per round)
-  - 6 players: 5 matches (inefficient legacy schedule – player 1 appears each match)
-  - 7 players: 7 matches (inefficient legacy schedule – each player 4 matches)
+  - 6 players: 6 matches (equal play — 4 matches each, two sit-outs each)
+  - 7 players: 7 matches (each player 4 matches, three sit-outs per round)
   - 8 players: 14 matches (7 rounds × 2 courts, complete partner rotation)
 - **Round-Based Play**: For multi-court tournaments, matches are organized in rounds
 - **Score Input**: Easy score entry interface - click a team and select their score
@@ -48,6 +48,12 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Tests
+
+```bash
+npm test
+```
 
 ### Building for Production
 
@@ -104,8 +110,8 @@ Key points:
 - No runtime pairing algorithms. Matches are read from a static template.
 - Player-to-index assignment is shuffled per generation. This keeps the round/court order identical but varies who occupies each template slot, making "play again" feel fresh while scores remain tied to the correct Player objects.
 - Courts are only relevant for the 8-player schedule (two simultaneous matches per round).
-- 5 & 6 player schedules include byes; the UI ignores bye metadata (only matches are shown).
-- 6 & 7 player schedules are marked "inefficient" in the template – they remain for completeness but do not guarantee balanced appearances.
+- 5, 6, and 7 player schedules include sit-outs in the JSON; the UI shows matches only.
+- The 7-player template is a one-court format with three sit-outs per round.
 
 ## Project Structure
 
@@ -113,11 +119,13 @@ Key points:
 src/
 ├── app/
 │   ├── components/
-│   │   ├── TournamentSetup.tsx  # Player setup (4-15 players) and tournament configuration
+│   │   ├── TournamentSetup.tsx  # Player setup (4–8 players) and tournament configuration
 │   │   ├── MatchesList.tsx      # Match management, score input, and round display
 │   │   └── Results.tsx          # Tournament results and rankings
 │   ├── utils/
-│   │   └── matchGeneration.ts   # Static schedule lookup (no algorithms)
+│   │   ├── matchGeneration.ts   # Static schedule lookup
+│   │   ├── tournamentLogic.ts   # Scoring, standings, finish/reset/play-again
+│   │   └── pairing-list.json    # Round templates for 4–8 players
 │   ├── types.ts                 # TypeScript type definitions
 │   └── page.tsx                 # Main application component
 ├── globals.css                  # Global styles
@@ -133,12 +141,12 @@ src/
 
 ## Static Schedules Summary
 
-| Players | Matches | Courts | Notes                               |
-| ------- | ------- | ------ | ----------------------------------- |
-| 4       | 3       | 1      | Full partner rotation               |
-| 5       | 5       | 1      | Every pair once, one bye each round |
-| 6       | 5       | 1      | Inefficient (player 1 every match)  |
-| 7       | 7       | 1      | Inefficient, each player 4 matches  |
-| 8       | 14      | 2      | Complete unique partnerships        |
+| Players | Matches | Courts | Notes                                      |
+| ------- | ------- | ------ | ------------------------------------------ |
+| 4       | 3       | 1      | Full partner rotation                      |
+| 5       | 5       | 1      | Every pair once, one sit-out each round    |
+| 6       | 6       | 1      | Equal play: 4 matches and 2 sit-outs each  |
+| 7       | 7       | 1      | Each player 4 matches, 3 sit-outs per round |
+| 8       | 14      | 2      | Complete unique partnerships               |
 
 > For future changes, update `pairing-list.json` and the UI will automatically reflect the new schedule for that player count.

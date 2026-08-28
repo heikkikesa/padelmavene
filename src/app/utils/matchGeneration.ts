@@ -1,11 +1,6 @@
 import { Player, Match } from "../types";
 import scheduleData from "./pairing-list.json";
 
-// New implementation: purely static schedule lookup for 4–8 players.
-// The JSON file contains zero-based player indexes which we map to the
-// provided players array (whose ids start at 1). No shuffling or dynamic
-// algorithm is performed – the order is exactly as listed in the template.
-
 type ScheduleTemplates = {
   scheduleTemplates: {
     [key: string]: {
@@ -18,8 +13,8 @@ type ScheduleTemplates = {
           team2: number[];
           court?: number;
         }>;
-        bye?: number[]; // 5-player template naming
-        byes?: number[]; // 6/7-player template naming
+        bye?: number[];
+        byes?: number[];
       }>;
     };
   };
@@ -27,25 +22,67 @@ type ScheduleTemplates = {
 
 const templates = scheduleData as ScheduleTemplates;
 
-export const generateAmericanoMatches = (players: Player[]): Match[] => {
-  const count = players.length;
-  if (count < 4 || count > 8) {
-    // Out of supported range – return empty array.
-    return [];
+const MIN_PLAYERS = 4;
+const MAX_PLAYERS = 8;
+
+function getTemplate(playerCount: number) {
+  if (playerCount < MIN_PLAYERS || playerCount > MAX_PLAYERS) {
+    return undefined;
   }
+  return templates.scheduleTemplates[String(playerCount)];
+}
 
-  const template = templates.scheduleTemplates[String(count)];
-  if (!template) return [];
+function identityIndices(count: number): number[] {
+  return Array.from({ length: count }, (_, i) => i);
+}
 
-  // Shuffle player-to-index mapping for variety without changing round order.
-  // We create a random permutation of 0..count-1 and use it when mapping
-  // template indices to actual players. This keeps scores tied to the Player
-  // objects in the generated matches while giving a fresh feel between runs.
-  const indices = Array.from({ length: count }, (_, i) => i);
+function shuffledIndices(count: number): number[] {
+  const indices = identityIndices(count);
   for (let i = indices.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [indices[i], indices[j]] = [indices[j], indices[i]];
   }
+  return indices;
+}
+
+export function getScheduleInfo(playerCount: number): {
+  matchCount: number;
+  courtCount: number;
+} | null {
+  const template = getTemplate(playerCount);
+  if (!template) return null;
+
+  const courtIds = new Set<number>();
+  let matchCount = 0;
+  for (const round of template.rounds) {
+    for (const match of round.matches) {
+      matchCount++;
+      if (match.court !== undefined) {
+        courtIds.add(match.court);
+      }
+    }
+  }
+
+  return {
+    matchCount,
+    courtCount: courtIds.size > 0 ? courtIds.size : 1,
+  };
+}
+
+export const generateAmericanoMatches = (
+  players: Player[],
+  indexMap?: readonly number[]
+): Match[] => {
+  const count = players.length;
+  const template = getTemplate(count);
+  if (!template) {
+    return [];
+  }
+
+  const indices =
+    indexMap && indexMap.length === count
+      ? [...indexMap]
+      : shuffledIndices(count);
 
   const matches: Match[] = [];
   let id = 1;

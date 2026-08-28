@@ -1,6 +1,7 @@
 "use client";
 
 import { Match, PlayerStats, TournamentData } from "../types";
+import { calculatePlayerStats } from "../utils/tournamentLogic";
 import { useState } from "react";
 
 interface ResultsProps {
@@ -21,78 +22,10 @@ export default function Results({
   const [showConfirmReshuffle, setShowConfirmReshuffle] = useState(false);
   const [nextMaxScore, setNextMaxScore] = useState(tournamentData.maxScore);
 
-  const calculatePlayerStats = (): PlayerStats[] => {
-    const stats: { [playerId: number]: PlayerStats } = {};
-
-    // Initialize stats for all players
-    tournamentData.players.forEach((player) => {
-      stats[player.id] = {
-        player,
-        wins: 0,
-        losses: 0,
-        ties: 0,
-        pointsFor: 0,
-        pointsAgainst: 0,
-        pointsDifference: 0,
-        matchesPlayed: 0,
-      };
-    });
-
-    // Calculate stats from completed matches
-    tournamentData.results.forEach((match) => {
-      if (match.score) {
-        const team1Players = match.team1;
-        const team2Players = match.team2;
-        const { team1Score, team2Score, winner } = match.score;
-
-        // Update stats for team 1 players
-        team1Players.forEach((player) => {
-          const playerStats = stats[player.id];
-          playerStats.matchesPlayed++;
-          playerStats.pointsFor += team1Score;
-          playerStats.pointsAgainst += team2Score;
-
-          if (winner === "team1") {
-            playerStats.wins++;
-          } else if (winner === "tie") {
-            playerStats.ties++;
-          } else {
-            playerStats.losses++;
-          }
-        });
-
-        // Update stats for team 2 players
-        team2Players.forEach((player) => {
-          const playerStats = stats[player.id];
-          playerStats.matchesPlayed++;
-          playerStats.pointsFor += team2Score;
-          playerStats.pointsAgainst += team1Score;
-
-          if (winner === "team2") {
-            playerStats.wins++;
-          } else if (winner === "tie") {
-            playerStats.ties++;
-          } else {
-            playerStats.losses++;
-          }
-        });
-      }
-    });
-
-    // Calculate point differences
-    Object.values(stats).forEach((playerStats) => {
-      playerStats.pointsDifference =
-        playerStats.pointsFor - playerStats.pointsAgainst;
-    });
-
-    // Sort by point difference first, then by wins
-    return Object.values(stats).sort((a, b) => {
-      if (a.pointsDifference !== b.pointsDifference) {
-        return b.pointsDifference - a.pointsDifference; // Better point difference first
-      }
-      return b.wins - a.wins; // More wins as tiebreaker
-    });
-  };
+  const playerStats = calculatePlayerStats(
+    tournamentData.players,
+    tournamentData.results
+  );
 
   const renderStandingsTable = (standings: PlayerStats[], title: string) => (
     <div className="mb-8">
@@ -178,7 +111,6 @@ export default function Results({
     </div>
   );
 
-  const playerStats = calculatePlayerStats();
   const completedMatches = tournamentData.results.filter(
     (match) => match.score
   ).length;
@@ -372,7 +304,11 @@ export default function Results({
 
       {/* Reshuffle Tournament Confirmation Modal */}
       {showConfirmReshuffle && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+          role="dialog"
+          aria-modal="true"
+        >
           <div className="bg-gray-800 border border-gray-600 rounded-lg p-6 max-w-md w-full mx-4">
             <div className="space-y-4">
               <h3 className="text-xl font-bold text-center text-white">

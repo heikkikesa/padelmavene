@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Player, TournamentData } from "../types";
-import { generateAmericanoMatches } from "../utils/matchGeneration";
+import { getScheduleInfo } from "../utils/matchGeneration";
+import { createTournament } from "../utils/tournamentLogic";
 
 interface TournamentSetupProps {
   onSetupComplete: (data: TournamentData) => void;
@@ -14,8 +15,10 @@ export default function TournamentSetup({
   const [playerCount, setPlayerCount] = useState<number>(0);
   const [players, setPlayers] = useState<Player[]>([]);
   const [maxScore, setMaxScore] = useState<number>(16);
+  const [error, setError] = useState<string | null>(null);
 
   const handlePlayerCountChange = (count: number) => {
+    setError(null);
     setPlayerCount(count);
     const newPlayers = Array.from({ length: count }, (_, i) => ({
       id: i + 1,
@@ -36,17 +39,15 @@ export default function TournamentSetup({
       players.length > 8 ||
       players.some((p) => !p.name.trim())
     ) {
-      alert("Please enter names for all players (4-8 players supported)");
+      setError("Please enter names for all players (4-8 players supported)");
       return;
     }
 
-    const matches = generateAmericanoMatches(players);
-    onSetupComplete({
-      players,
-      maxScore,
-      matches,
-    });
+    setError(null);
+    onSetupComplete(createTournament(players, maxScore));
   };
+
+  const scheduleInfo = getScheduleInfo(playerCount);
 
   return (
     <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
@@ -86,9 +87,10 @@ export default function TournamentSetup({
                 key={player.id}
                 type="text"
                 value={player.name}
-                onChange={(e) =>
-                  handlePlayerNameChange(player.id, e.target.value)
-                }
+                onChange={(e) => {
+                  setError(null);
+                  handlePlayerNameChange(player.id, e.target.value);
+                }}
                 className="p-3 border border-gray-600 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
                 placeholder={`Player ${player.id}`}
               />
@@ -121,22 +123,24 @@ export default function TournamentSetup({
         </div>
       )}
 
-      {/* Start Tournament Button */}
       {playerCount > 0 && (
-        <button
-          onClick={handleStartTournament}
-          className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-        >
-          Start Tournament (
-          {(() => {
-            const matches = generateAmericanoMatches(players);
-            const courts = playerCount === 8 ? 2 : 1;
-            return courts > 1
-              ? `${matches.length} matches, ${courts} courts`
-              : `${matches.length} matches`;
-          })()}
-          )
-        </button>
+        <>
+          {error && (
+            <p className="mb-4 text-red-400 font-semibold" role="alert">
+              {error}
+            </p>
+          )}
+          <button
+            onClick={handleStartTournament}
+            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+          >
+            Start Tournament (
+            {scheduleInfo && scheduleInfo.courtCount > 1
+              ? `${scheduleInfo.matchCount} matches, ${scheduleInfo.courtCount} courts`
+              : `${scheduleInfo?.matchCount ?? 0} matches`}
+            )
+          </button>
+        </>
       )}
     </div>
   );

@@ -13,20 +13,20 @@ Multi-court play is now limited to the 8-player static schedule. All other playe
 
 | Round | Court 1        | Court 2        |
 | ----- | -------------- | -------------- |
-| 1     | (0,1) vs (2,3) | (4,5) vs (6,7) |
-| 2     | (0,2) vs (4,6) | (1,7) vs (3,5) |
-| 3     | (0,3) vs (5,6) | (1,4) vs (2,7) |
-| 4     | (0,4) vs (3,7) | (1,5) vs (2,6) |
-| 5     | (0,5) vs (2,4) | (1,6) vs (3,7) |
-| 6     | (0,6) vs (1,2) | (3,4) vs (5,7) |
-| 7     | (0,7) vs (1,3) | (2,5) vs (4,6) |
+| 1     | (0,1) vs (2,6) | (3,4) vs (5,7) |
+| 2     | (0,2) vs (3,7) | (4,5) vs (6,1) |
+| 3     | (0,3) vs (4,1) | (5,6) vs (7,2) |
+| 4     | (0,4) vs (5,2) | (6,7) vs (1,3) |
+| 5     | (0,5) vs (6,3) | (7,1) vs (2,4) |
+| 6     | (0,6) vs (7,4) | (1,2) vs (3,5) |
+| 7     | (0,7) vs (1,5) | (2,3) vs (4,6) |
 
 Indexes correspond to zero-based positions in the players array; the app maps them to actual player objects.
 
 ## Implementation Notes
 
 - Source file: `src/app/utils/pairing-list.json` (template key `"8"`).
-- Lookup only; no randomization of teams or side swapping.
+- Lookup only. Player-to-template-index mapping is shuffled per generation; round order and court assignments stay fixed.
 - Match IDs increment sequentially across rounds.
 - UI groups matches by `round` and displays `court` when present.
 
